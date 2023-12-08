@@ -1,0 +1,35 @@
+{
+    auto_https off
+}
+
+:8080 {
+    metrics /metrics
+}
+
+# http to https
+http://push.example.net {
+    redir https://{host}{uri} permanent
+}
+
+https://push.example.net{
+    tls pushproxy/example/cert.pem pushproxy/example/key.pem {
+        protocols tls1.2 tls1.3
+    }
+
+    basicauth * {
+        lds xxxxxxxxxxxxxxxxx...
+    }
+
+    log {
+        output stdout
+    }
+    reverse_proxy  {
+        to http://localhost:9092 http://localhost:9093
+        lb_policy pushproxy
+        health_uri /-/healthy
+        health_interval 15s
+    }
+    # handle_errors {
+    #     respond "{err.status_code} {err.status_text}"
+    # }
+}
